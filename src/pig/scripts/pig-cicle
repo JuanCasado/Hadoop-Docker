@@ -1,0 +1,5 @@
+#!/bin/bash
+
+while true; do
+  pig -x mapreduce /scripts/analysis.pig
+done

@@ -1,0 +1,2 @@
+export FLUME_CLASSPATH="$(JARS=(/usr/local/apache-zookeeper/current/lib/*.jar); IFS=:; echo "${JARS[*]}"):$(JARS=(/usr/local/apache-zookeeper/current/dist-maven/*.jar); IFS=:; echo "${JARS[*]}"):/opt/hadoop-3.2.1/share/hadoop/common/hadoop-common-2.7.1.jar:/opt/hadoop-3.2.1/share/hadoop/common/lib/*:/opt/hadoop-3.2.1/share/hadoop/hdfs/hadoop-hdfs-2.7.1.jar:/opt/hadoop-3.2.1/share/hadoop/hdfs/lib/*"
+export JAVA_OPTS="-Xms512m -Xmx1024m -Dcom.sun.management.jmxremote"

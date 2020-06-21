@@ -1,0 +1,21 @@
+
+const hive = require('./analysis')
+const express = require('express')
+const app = express()
+ 
+app.get('/tweets/raw',                 async(req,res)=>{ res.send(await hive.getAllTweets())                 })
+app.get('/mentions/raw',               async(req,res)=>{ res.send(await hive.getAllMentions())               })
+app.get('/mentions/chart',             async(req,res)=>{ res.send(await hive.mentionsChart())                })
+app.get('/mentioned/raw',              async(req,res)=>{ res.send(await hive.getAllMentioned())              })
+app.get('/mentioned/chart',            async(req,res)=>{ res.send(await hive.mentionedChart())               })
+app.get('/tweets/geolocated',          async(req,res)=>{ res.send(await hive.getGeolocatedTweets())          })
+app.get('/tweets/text',                async(req,res)=>{ res.send(await hive.getTextTweets())                })
+app.get('/tweets/sentiment',           async(req,res)=>{ res.send(await hive.getSentimentTweets())           })
+app.get('/tweets/sentiment/histogram', async(req,res)=>{ res.send(await hive.getSentimentTweetsHistogram())  })
+app.get('/tweets/readability',         async(req,res)=>{ res.send(await hive.getReadabilityTweets())         })
+app.get('/tweets/readingTime',         async(req,res)=>{ res.send(await hive.getReadingTimeTweets())         })
+app.get('/tweets/text/compact',        async(req,res)=>{ res.send(await hive.getFullTextTweets())            })
+app.get('/tweets/words/main',          async(req,res)=>{ res.send(await hive.getMainWordsTweets())           })
+app.get('/tweets/words/frequency',     async(req,res)=>{ res.send(await hive.getFrequencyTweets())           })
+
+app.listen(3005).on('listening', ()=>{console.log('Ready!')})

@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "express": "^4.17.1",
+    "lorca-nlp": "^1.0.12",
+    "sentiment": "^5.0.2"
+  }
+}

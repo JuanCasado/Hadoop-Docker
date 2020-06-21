@@ -1,0 +1,93 @@
+version: '3.7'
+
+services:
+  namenode:
+    image: swarm-docker-registry.com:5000/namenode:latest
+    hostname: namenode
+    networks:
+      - hadoop-network
+    ports:
+      - 9870:9870
+      - 9000:9000
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  datanode:
+    image: swarm-docker-registry.com:5000/datanode:latest
+    hostname: datanode
+    networks:
+      - hadoop-network
+    ports:
+      - 9864:9864
+    volumes:
+      - datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    deploy:
+      mode: global
+
+  resourcemanager:
+    image: swarm-docker-registry.com:5000/resourcemanager:latest
+    hostname: resourcemanager
+    networks:
+      - hadoop-network
+    ports:
+      - 8088:8088
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      mode: replicated
+      replicas: 1
+    healthcheck:
+      disable: true
+
+  nodemanager:
+    image: swarm-docker-registry.com:5000/nodemanager:latest
+    hostname: nodemanager
+    networks:
+      - hadoop-network
+    ports:
+      - 8042:8042
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      mode: global
+
+  historyserver:
+    image: swarm-docker-registry.com:5000/historyserver:latest
+    hostname: historyserver
+    networks:
+      - hadoop-network
+    ports:
+      - 8188:8188
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      mode: replicated
+      replicas: 1
+
+volumes:
+  datanode:
+  namenode:
+  hadoop_historyserver:
+
+networks:
+  hadoop-network:
+    name: hadoop-network

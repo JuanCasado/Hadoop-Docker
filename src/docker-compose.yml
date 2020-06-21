@@ -1,0 +1,195 @@
+version: "3.7"
+
+services:
+  namenode:
+    image: namenode:latest
+    container_name: namenode
+    hostname: namenode
+    build: namenode
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 9870:9870
+      - 9000:9000
+      - 8020:8020
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+
+  datanode:
+    image: datanode:latest
+    container_name: datanode
+    hostname: datanode
+    build: datanode
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 9864:9864
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - ./hadoop.env
+  
+  resourcemanager:
+    image: resourcemanager:latest
+    container_name: resourcemanager
+    hostname: resourcemanager
+    build: resourcemanager
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 8088:8088
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864"
+    env_file:
+      - ./hadoop.env
+
+  nodemanager:
+    image: nodemanager:latest
+    container_name: nodemanager
+    hostname: nodemanager
+    build: nodemanager
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 8042:8042
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+  
+  historyserver:
+    image: historyserver:latest
+    container_name: historyserver
+    hostname: historyserver
+    build: historyserver
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 8188:8188
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088"
+    volumes:
+      - hadoop_historyserver:/hadoop/yarn/timeline
+    env_file:
+      - ./hadoop.env
+  
+  zoo:
+    image: zookeeper:3.4.10
+    container_name: zoo
+    hostname: zoo
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 2181:2181
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+
+  hbase-master:
+    image: hbase-master:latest
+    build: hbase-master
+    container_name: hbase-master
+    hostname: hbase-master
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 16010:16010
+      - 8081:8081
+      - 9090:9090
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 datanode:9864 zoo:2181"
+    env_file:
+      - ./hbase.env
+
+  hbase-region:
+    image: hbase-regionserver:latest
+    build: hbase-regionserver
+    container_name: hbase-regionserver
+    hostname: hbase-regionserver
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 16030:16030
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hbase-region
+      SERVICE_PRECONDITION: "namenode:9000 datanode:9864 zoo:2181 hbase-master:16010"
+    env_file:
+      - ./hbase.env
+
+  hive-server:
+    image: hive-server:latest
+    build: hive-server
+    container_name: hive-server
+    hostname: hive-server
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 9999:9999
+      - 10000:10000
+      - 10001:10001
+      - 10002:10002
+    volumes:
+      - ./hive-server/scripts:/opt/scripts
+    command: /opt/hive/bin/hive --service hiveserver2
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore/metastore"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+    env_file:
+      - ./hive.env
+
+  hive-metastore:
+    image: hive-server:latest
+    build: hive-server
+    container_name: hive-metastore
+    hostname: hive-metastore
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 9083:9083
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 datanode:9864 hive-metastore-postgresql:5432"
+    env_file:
+      - ./hive.env
+
+  hive-metastore-postgresql:
+    image: hive-metastore-postgresql:latest
+    build: hive-metastore-postgresql
+    container_name: hive-metastore-postgresql
+    hostname: hive-metastore-postgresql
+    restart: always
+    networks:
+      - hadoop-network
+    ports:
+      - 5432:5432
+    volumes:
+      - postgresql_metastore:/var/lib/postgresql/data
+    environment: 
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_PASSWORD=password
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:
+  hadoop_historyserver:
+  postgresql_metastore:
+
+networks:
+  hadoop-network:
+    name: hadoop-network

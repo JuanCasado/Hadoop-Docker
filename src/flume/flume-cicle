@@ -1,0 +1,7 @@
+#!/bin/bash
+
+while true; do
+  for SOURCE in "TwitterSpainpbKeywords" "TwitterBarcelona" "TwitterSpainPB" "TwitterMadrid" "TwitterKeywords"; do
+    /app/bin/flume-ng agent --conf conf -f /config/$SOURCE.conf -Dflume.root.logger=DEBUG,console -n $SOURCE  & sleep 100 ; kill $!
+  done
+done

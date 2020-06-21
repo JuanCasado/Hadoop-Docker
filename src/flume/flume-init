@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/app/bin/flume-ng agent --conf conf -f /config/$SOURCE.conf -Dflume.root.logger=DEBUG,console -n $SOURCE
+

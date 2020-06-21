@@ -1,0 +1,130 @@
+version: "3.7"
+
+services:
+  flume-TwitterSpainpbKeywords:
+    image: flume:latest
+    build: flume
+    container_name: flume
+    hostname: flume
+    stdin_open: true
+    tty: true
+    networks:
+      - hadoop-network
+    volumes:
+      - ./flume/conf:/config
+    command: "bash -c '/app/bin/flume-init'"
+    environment:
+      SOURCE: "TwitterSpainpbKeywords"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088 nodemanager:8042 zoo:2181"
+    env_file:
+      - ./hadoop.env
+  
+  flume-TwitterBarcelona:
+    image: flume:latest
+    build: flume
+    container_name: flume
+    hostname: flume
+    stdin_open: true
+    tty: true
+    networks:
+      - hadoop-network
+    volumes:
+      - ./flume/conf:/config
+    command: "bash -c '/app/bin/flume-init'"
+    environment:
+      SOURCE: "TwitterBarcelona"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088 nodemanager:8042 zoo:2181"
+    env_file:
+      - ./hadoop.env
+  
+  flume-TwitterSpainPB:
+    image: flume:latest
+    build: flume
+    container_name: flume
+    hostname: flume
+    stdin_open: true
+    tty: true
+    networks:
+      - hadoop-network
+    volumes:
+      - ./flume/conf:/config
+    command: "bash -c '/app/bin/flume-init'"
+    environment:
+      SOURCE: "TwitterSpainPB"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088 nodemanager:8042 zoo:2181"
+    env_file:
+      - ./hadoop.env
+
+  flume-TwitterMadrid:
+    image: flume:latest
+    build: flume
+    container_name: flume
+    hostname: flume
+    stdin_open: true
+    tty: true
+    networks:
+      - hadoop-network
+    volumes:
+      - ./flume/conf:/config
+    command: "bash -c '/app/bin/flume-init'"
+    environment:
+      SOURCE: "TwitterMadrid"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088 nodemanager:8042 zoo:2181"
+    env_file:
+      - ./hadoop.env
+
+  flume-TwitterKeywords:
+    image: flume:latest
+    build: flume
+    container_name: flume
+    hostname: flume
+    stdin_open: true
+    tty: true
+    networks:
+      - hadoop-network
+    volumes:
+      - ./flume/conf:/config
+    command: "bash -c '/app/bin/flume-init'"
+    environment:
+      SOURCE: "TwitterKeywords"
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088 nodemanager:8042 zoo:2181"
+    env_file:
+      - ./hadoop.env
+
+  pig:
+    image: pig:latest
+    build: pig
+    container_name: pig
+    hostname: pig
+    stdin_open: true
+    tty: true
+    networks:
+      - hadoop-network
+    volumes:
+      - ./pig/scripts:/scripts
+    #command: "pig -x local /scripts/analysis.pig"
+    command: "pig -x mapreduce /scripts/analysis.pig"
+    #command: "bash"
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088 nodemanager:8042 zoo:2181 hbase-master:16010"
+    env_file:
+      - ./hadoop.env
+
+  example:
+    image: example:latest
+    build: example
+    container_name: example
+    hostname: example
+    stdin_open: true
+    tty: true
+    networks:
+      - hadoop-network
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode:9864 resourcemanager:8088 nodemanager:8042 zoo:2181 hbase-master:16010"
+    env_file:
+      - ./hadoop.env
+
+networks:
+  hadoop-network:
+    external:
+      name: hadoop-network
